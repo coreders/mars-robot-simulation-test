@@ -15,3 +15,7 @@ https://coreders.github.io/mars-robot-simulation-test/robot-control-frontend/dis
         cd robot-control-frontend && ng serve 
         ``` 
     2. Open `http://localhost:4200/` in your browser
+    
+    
+## Disclaimer
+Mars and robot images come from https://pixabay.com 

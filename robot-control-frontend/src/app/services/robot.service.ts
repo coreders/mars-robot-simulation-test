@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import {RobotSimulator} from "./robot-simulator.service";
+import {Subject} from "rxjs";
 
 @Injectable({
   providedIn: 'root'
@@ -7,9 +8,17 @@ import {RobotSimulator} from "./robot-simulator.service";
 export class RobotService {
   private commandsHistory: string[] = []
   private outputs: string[] = []
+  private log: string[] = []
   public isPlaced : boolean = false
+  public robotPositionObservable = new Subject<RobotPosition>();
 
-  constructor(private simulator : RobotSimulator) { }
+  /**
+   * The current implementation simply injects a local client-side RobotSimulator, a remote implementation might also be used to call a backend simulator
+   * @param simulator
+   */
+  constructor(private simulator : RobotSimulator) {
+
+  }
 
   getCommandsHistory() {
     return this.commandsHistory
@@ -20,11 +29,16 @@ export class RobotService {
   }
 
   executeCommand(command: RobotCommand) {
+    let commandStr = command.toString();
+    this.commandsHistory.push(commandStr)
+    this.log.push("["+new Date() + "] >> "+commandStr)
 
-    this.commandsHistory.push(command.toString())
-    let output = this.simulator.executeCommand(command.toString())
+    let output = this.simulator.executeCommand(commandStr)
     if(output && output.length > 0) {
       this.outputs.push(output)
+      this.log.push("["+new Date() +"] << "+output)
+
+      this.robotPositionObservable.next(this.parsePosition(output))
     }
     if(command.type == "PLACE") {
       this.isPlaced = true
@@ -50,6 +64,25 @@ export class RobotService {
     }
     return command;
   }
+
+  private parsePosition(report: string) {
+    let robotPosition = new RobotPosition();
+
+    let parsed_report = /^\s*(\d+)\s*,\s*(\d+)\s*,\s*(\w+)\s*$/.exec(report)
+    if(parsed_report) {
+      robotPosition.xPosition = +parsed_report[1]
+      robotPosition.yPosition = +parsed_report[2]
+      robotPosition.direction = parsed_report[3]
+    }
+    return robotPosition;
+  }
+}
+
+
+export class RobotPosition {
+  public xPosition: number = 0
+  public yPosition: number = 0
+  public direction: string = "NORTH"
 }
 
 

@@ -44,24 +44,33 @@ const environment = {
 /*!*******************************************!*\
   !*** ./src/app/services/robot.service.ts ***!
   \*******************************************/
-/*! exports provided: RobotService, RobotCommand */
+/*! exports provided: RobotService, RobotPosition, RobotCommand */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RobotService", function() { return RobotService; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RobotPosition", function() { return RobotPosition; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "RobotCommand", function() { return RobotCommand; });
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @angular/core */ "fXoL");
-/* harmony import */ var _robot_simulator_service__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./robot-simulator.service */ "hR0m");
+/* harmony import */ var rxjs__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! rxjs */ "qCKp");
+/* harmony import */ var _robot_simulator_service__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./robot-simulator.service */ "hR0m");
+
 
 
 
 class RobotService {
+    /**
+     * The current implementation simply injects a local client-side RobotSimulator, a remote implementation might also be used to call a backend simulator
+     * @param simulator
+     */
     constructor(simulator) {
         this.simulator = simulator;
         this.commandsHistory = [];
         this.outputs = [];
+        this.log = [];
         this.isPlaced = false;
+        this.robotPositionObservable = new rxjs__WEBPACK_IMPORTED_MODULE_1__["Subject"]();
     }
     getCommandsHistory() {
         return this.commandsHistory;
@@ -70,10 +79,14 @@ class RobotService {
         return this.outputs;
     }
     executeCommand(command) {
-        this.commandsHistory.push(command.toString());
-        let output = this.simulator.executeCommand(command.toString());
+        let commandStr = command.toString();
+        this.commandsHistory.push(commandStr);
+        this.log.push("[" + new Date() + "] >> " + commandStr);
+        let output = this.simulator.executeCommand(commandStr);
         if (output && output.length > 0) {
             this.outputs.push(output);
+            this.log.push("[" + new Date() + "] << " + output);
+            this.robotPositionObservable.next(this.parsePosition(output));
         }
         if (command.type == "PLACE") {
             this.isPlaced = true;
@@ -95,15 +108,32 @@ class RobotService {
         }
         return command;
     }
+    parsePosition(report) {
+        let robotPosition = new RobotPosition();
+        let parsed_report = /^\s*(\d+)\s*,\s*(\d+)\s*,\s*(\w+)\s*$/.exec(report);
+        if (parsed_report) {
+            robotPosition.xPosition = +parsed_report[1];
+            robotPosition.yPosition = +parsed_report[2];
+            robotPosition.direction = parsed_report[3];
+        }
+        return robotPosition;
+    }
 }
-RobotService.ɵfac = function RobotService_Factory(t) { return new (t || RobotService)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵinject"](_robot_simulator_service__WEBPACK_IMPORTED_MODULE_1__["RobotSimulator"])); };
+RobotService.ɵfac = function RobotService_Factory(t) { return new (t || RobotService)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵinject"](_robot_simulator_service__WEBPACK_IMPORTED_MODULE_2__["RobotSimulator"])); };
 RobotService.ɵprov = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineInjectable"]({ token: RobotService, factory: RobotService.ɵfac, providedIn: 'root' });
 /*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵsetClassMetadata"](RobotService, [{
         type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Injectable"],
         args: [{
                 providedIn: 'root'
             }]
-    }], function () { return [{ type: _robot_simulator_service__WEBPACK_IMPORTED_MODULE_1__["RobotSimulator"] }]; }, null); })();
+    }], function () { return [{ type: _robot_simulator_service__WEBPACK_IMPORTED_MODULE_2__["RobotSimulator"] }]; }, null); })();
+class RobotPosition {
+    constructor() {
+        this.xPosition = 0;
+        this.yPosition = 0;
+        this.direction = "NORTH";
+    }
+}
 class RobotCommand {
     constructor() {
         this.type = "PLACE";
@@ -557,23 +587,116 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+const _c0 = ["canvas"];
 class GuiControlComponent {
     constructor(robot) {
         this.robot = robot;
+        this.canvas = null;
+        this.renderingContext = null;
+        robot.robotPositionObservable.subscribe(value => {
+            this.displayRobotPosition(value);
+        });
+    }
+    ngOnInit() {
+        if (this.canvas) {
+            this.canvas.nativeElement.height = this.canvas.nativeElement.width;
+            this.renderingContext = this.canvas.nativeElement.getContext('2d');
+            this.redrawGrid();
+        }
+    }
+    redrawGrid() {
+        var _a;
+        (_a = this.renderingContext) === null || _a === void 0 ? void 0 : _a.clearRect(0, 0, this.canvas.nativeElement.width, this.canvas.nativeElement.height);
+        let spaceBetweenGridLines = this.getSpaceBetweenGridLines();
+        for (var i = 0; i < this.robot.getMaxGridPosition(); i++) {
+            this.drawLine((i + 1) * spaceBetweenGridLines, (i + 1) * spaceBetweenGridLines, 0, 1);
+            this.drawLine(0, 1, (i + 1) * spaceBetweenGridLines, (i + 1) * spaceBetweenGridLines);
+        }
+    }
+    getSpaceBetweenGridLines() {
+        return 1.0 / (this.robot.getMaxGridPosition() + 1.0);
+    }
+    drawLine(xPercentStart, xPercentEnd, yPercentStart, yPercentEnd) {
+        if (this.renderingContext && this.canvas) {
+            const __ret = this.mapPercentCoordinateToPixel(xPercentStart);
+            this.renderingContext.strokeStyle = '#FFFFFF50';
+            this.renderingContext.lineCap = 'round';
+            this.renderingContext.lineJoin = "round";
+            this.renderingContext.moveTo(this.mapPercentCoordinateToPixel(xPercentStart), this.mapPercentCoordinateToPixel(yPercentStart));
+            this.renderingContext.lineTo(this.mapPercentCoordinateToPixel(xPercentEnd), this.mapPercentCoordinateToPixel(yPercentEnd));
+            this.renderingContext.stroke();
+        }
+    }
+    mapPercentSizeToPixel(percentValue) {
+        var result = 0;
+        if (this.canvas) {
+            var squareSideInPixels = this.canvas.nativeElement.width;
+            var drawZonePercents = 0.7;
+            var drawZoneSizeInPixels = squareSideInPixels * drawZonePercents;
+            result = percentValue * drawZoneSizeInPixels;
+        }
+        return result;
+    }
+    mapPercentCoordinateToPixel(percentValue) {
+        var result = 0;
+        if (this.canvas) {
+            var squareSideInPixels = this.canvas.nativeElement.width;
+            var drawZonePercents = 0.7;
+            var drawStart = ((1 - drawZonePercents) / 2) * squareSideInPixels;
+            result = drawStart + this.mapPercentSizeToPixel(percentValue);
+        }
+        return result;
+    }
+    displayRobotPosition(position) {
+        let renderingContext = this.renderingContext;
+        if (renderingContext) {
+            this.redrawGrid();
+            let spaceBetweenGridLines = this.getSpaceBetweenGridLines();
+            let margin = 0.1;
+            let xPercents = (position.xPosition + margin) * spaceBetweenGridLines;
+            let yPercents = ((this.robot.getMaxGridPosition() - position.yPosition) + margin) * spaceBetweenGridLines;
+            let sizePercents = spaceBetweenGridLines * (1 - 2 * margin);
+            let xPixels = this.mapPercentCoordinateToPixel(xPercents);
+            let yPixels = this.mapPercentCoordinateToPixel(yPercents);
+            let sizeInPixels = this.mapPercentSizeToPixel(sizePercents);
+            if (renderingContext) {
+                var image = document.createElement("img");
+                image.onload = function () {
+                    if (renderingContext)
+                        renderingContext.drawImage(image, xPixels, yPixels, sizeInPixels, sizeInPixels);
+                };
+                image.src = './assets/robot-' + position.direction + '.png';
+            }
+        }
     }
 }
 GuiControlComponent.ɵfac = function GuiControlComponent_Factory(t) { return new (t || GuiControlComponent)(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdirectiveInject"](_services_robot_service__WEBPACK_IMPORTED_MODULE_1__["RobotService"])); };
-GuiControlComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: GuiControlComponent, selectors: [["gui-control"]], decls: 1, vars: 0, template: function GuiControlComponent_Template(rf, ctx) { if (rf & 1) {
-        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](0, "TODO gui control interface\n");
-    } }, encapsulation: 2 });
+GuiControlComponent.ɵcmp = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵdefineComponent"]({ type: GuiControlComponent, selectors: [["gui-control"]], viewQuery: function GuiControlComponent_Query(rf, ctx) { if (rf & 1) {
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵstaticViewQuery"](_c0, true);
+    } if (rf & 2) {
+        let _t;
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵqueryRefresh"](_t = _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵloadQuery"]()) && (ctx.canvas = _t.first);
+    } }, decls: 6, vars: 0, consts: [[1, "card", "m-2"], [1, "card-header"], [1, "mars-canvas"], ["canvas", ""]], template: function GuiControlComponent_Template(rf, ctx) { if (rf & 1) {
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](0, "div", 0);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](1, "div", 1);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵtext"](2, " Last known robot position ");
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementStart"](3, "div");
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelement"](4, "canvas", 2, 3);
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+        _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵɵelementEnd"]();
+    } }, styles: [".mars-canvas[_ngcontent-%COMP%] {\n  width: 40vw;\n  height: 40vw;\n  background-image: url('mars.svg');\n  background-size: 100%;\n  background-repeat: no-repeat;\n}\n/*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImd1aS1jb250cm9sLmNvbXBvbmVudC5jc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7RUFDRSxXQUFXO0VBQ1gsWUFBWTtFQUNaLGlDQUE0QztFQUM1QyxxQkFBcUI7RUFDckIsNEJBQTRCO0FBQzlCIiwiZmlsZSI6Imd1aS1jb250cm9sLmNvbXBvbmVudC5jc3MiLCJzb3VyY2VzQ29udGVudCI6WyIubWFycy1jYW52YXMge1xuICB3aWR0aDogNDB2dztcbiAgaGVpZ2h0OiA0MHZ3O1xuICBiYWNrZ3JvdW5kLWltYWdlOiB1cmwoJ3NyYy9hc3NldHMvbWFycy5zdmcnKTtcbiAgYmFja2dyb3VuZC1zaXplOiAxMDAlO1xuICBiYWNrZ3JvdW5kLXJlcGVhdDogbm8tcmVwZWF0O1xufVxuIl19 */"] });
 /*@__PURE__*/ (function () { _angular_core__WEBPACK_IMPORTED_MODULE_0__["ɵsetClassMetadata"](GuiControlComponent, [{
         type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["Component"],
         args: [{
                 selector: 'gui-control',
                 templateUrl: './gui-control.component.html',
-                styleUrls: []
+                styleUrls: ['./gui-control.component.css']
             }]
-    }], function () { return [{ type: _services_robot_service__WEBPACK_IMPORTED_MODULE_1__["RobotService"] }]; }, null); })();
+    }], function () { return [{ type: _services_robot_service__WEBPACK_IMPORTED_MODULE_1__["RobotService"] }]; }, { canvas: [{
+            type: _angular_core__WEBPACK_IMPORTED_MODULE_0__["ViewChild"],
+            args: ['canvas', { static: true }]
+        }] }); })();
 
 
 /***/ }),
