@@ -9,7 +9,7 @@ The latest build of the app can be axxessed here :
 https://coreders.github.io/mars-robot-simulation-test/robot-control-frontend/dist/
 
 ## How to build 
-* You will need to have nodejs and npm installed to run from the sources: 
+* You will need to have nodejs, npm and angular cli to run from the sources: 
     1. Compile and run a server :
         ```
         cd robot-control-frontend && ng serve 
