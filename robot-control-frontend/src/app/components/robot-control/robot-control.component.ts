@@ -11,6 +11,8 @@ export class RobotControlComponent {
   public commandForm: RobotCommand = new RobotCommand();
 
   public automaticReport: boolean = true
+  public rawTextControl: boolean = false
+  textCommand: string = ''
 
   constructor(public robot: RobotService) { }
 
@@ -19,6 +21,12 @@ export class RobotControlComponent {
     if(this.automaticReport && this.commandForm.type != "REPORT") {
       this.executeCommandByName("REPORT");
     }
+    this.commandForm = this.robot.initNewCommand()
+  }
+
+  executeRawTextCommand() {
+    this.robot.executeTextCommand(this.textCommand)
+    this.textCommand = ''
     this.commandForm = this.robot.initNewCommand()
   }
 

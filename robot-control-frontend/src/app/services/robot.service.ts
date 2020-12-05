@@ -9,7 +9,6 @@ export class RobotService {
   private commandsHistory: string[] = []
   private outputs: string[] = []
   private log: string[] = []
-  public isPlaced : boolean = false
   public robotPositionObservable = new Subject<RobotPosition>();
 
   /**
@@ -30,19 +29,7 @@ export class RobotService {
 
   executeCommand(command: RobotCommand) {
     let commandStr = command.toString();
-    this.commandsHistory.push(commandStr)
-    this.addLog(">> " + commandStr);
-
-    let output = this.simulator.executeCommand(commandStr)
-    if(output && output.length > 0) {
-      this.outputs.push(output)
-      this.addLog("<< " + output);
-
-      this.robotPositionObservable.next(this.parsePosition(output))
-    }
-    if(command.type == "PLACE") {
-      this.isPlaced = true
-    }
+    this.executeTextCommand(commandStr)
   }
 
   private addLog(log: string) {
@@ -50,7 +37,7 @@ export class RobotService {
   }
 
   getCommandTypes() {
-    return this.simulator.commandTypes.filter(type => (type == "PLACE") != this.isPlaced )
+    return this.simulator.commandTypes.filter(type => (type == "PLACE") != this.simulator.isPlaced() )
   }
 
   getMaxGridPosition() {
@@ -63,7 +50,7 @@ export class RobotService {
 
   initNewCommand() {
     let command = new RobotCommand()
-    if(this.isPlaced) {
+    if(this.simulator.isPlaced()) {
       command.type = "MOVE"
     }
     return command;
@@ -85,6 +72,18 @@ export class RobotService {
     return this.log
   }
 
+  executeTextCommand(textCommand: any) {
+    this.commandsHistory.push(textCommand)
+    this.addLog(">> " + textCommand);
+
+    let output = this.simulator.executeCommand(textCommand)
+    if(output && output.length > 0) {
+      this.outputs.push(output)
+      this.addLog("<< " + output);
+
+      this.robotPositionObservable.next(this.parsePosition(output))
+    }
+  }
 }
 
 

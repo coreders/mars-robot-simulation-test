@@ -36,6 +36,10 @@ export class RobotSimulator {
     }
     return result
   }
+
+  isPlaced() {
+    return this.activeRobot.isPlaced;
+  }
 }
 
 class Robot {
