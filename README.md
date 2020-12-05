@@ -5,7 +5,7 @@ This test project contains only one module : the `robot-control-frontend` is a s
 The control interface allows you to control a simulated robot navigating on a simulated Mars planet that is a flat 5x5 grid.
 
 ## Demo
-The latest build of the app can be axxessed here : 
+The latest build of the app can be accessed here : 
 https://coreders.github.io/mars-robot-simulation-test/robot-control-frontend/dist/
 
 ## How to build 
