@@ -49,7 +49,7 @@ export class GuiControlComponent implements OnInit {
   private drawLine(xPercentStart: number, xPercentEnd: number, yPercentStart: number, yPercentEnd: number) {
       if (this.renderingContext && this.canvas) {
         const __ret = this.mapPercentCoordinateToPixel(xPercentStart);
-        this.renderingContext.strokeStyle = '#FFFFFF50';
+        this.renderingContext.strokeStyle = '#FFFFFF30';
         this.renderingContext.lineCap = 'round';
 
         this.renderingContext.lineJoin = "round";
