@@ -3,17 +3,24 @@ import {RobotService} from "../../services/robot.service";
 import {RobotCommand} from "../../services/robot.service";
 
 @Component({
-  selector: 'manual-control',
-  templateUrl: './manual-control.component.html',
-  styleUrls: ['./manual-control.component.css']
+  selector: 'robot-control',
+  templateUrl: './robot-control.component.html',
+  styleUrls: ['./robot-control.component.css']
 })
-export class ManualControlComponent {
+export class RobotControlComponent {
   public commandForm: RobotCommand = new RobotCommand();
+
+  public automaticReport: boolean = true
 
   constructor(public robot: RobotService) { }
 
   executeCommand() {
     this.robot.executeCommand(this.commandForm)
+    if(this.automaticReport && this.commandForm.type != "REPORT") {
+      let reportCommand = new RobotCommand();
+      reportCommand.type = "REPORT"
+      this.robot.executeCommand(reportCommand)
+    }
     this.commandForm = this.robot.initNewCommand()
   }
 
@@ -27,6 +34,10 @@ export class ManualControlComponent {
     if(event.target) {
       this.commandForm.direction = (<HTMLInputElement>event.target).value
     }
+  }
+
+  toggleAutomaticReports() {
+    this.automaticReport = !this.automaticReport
   }
 }
 

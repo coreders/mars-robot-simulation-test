@@ -3,15 +3,15 @@ import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
-import {ManualControlComponent} from "./components/manual-control/manual-control.component";
-import {GuiControlComponent} from "./components/gui-control/gui-control.component";
+import {RobotControlComponent} from "./components/robot-control/robot-control.component";
+import {PositionDisplayComponent} from "./components/position-display/position-display.component";
 import { FormsModule }        from '@angular/forms';
 
 @NgModule({
   declarations: [
     AppComponent,
-    ManualControlComponent,
-    GuiControlComponent
+    RobotControlComponent,
+    PositionDisplayComponent
   ],
   imports: [
     FormsModule,

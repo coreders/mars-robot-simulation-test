@@ -1,12 +1,14 @@
 import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {RobotPosition, RobotService} from "../../services/robot.service";
 
+const gridColor = '#FFFFFF30';
+
 @Component({
-  selector: 'gui-control',
-  templateUrl: './gui-control.component.html',
-  styleUrls: ['./gui-control.component.css']
+  selector: 'position-display',
+  templateUrl: './position-display.component.html',
+  styleUrls: ['./position-display.component.css']
 })
-export class GuiControlComponent implements OnInit {
+export class PositionDisplayComponent implements OnInit {
 
 
 
@@ -49,9 +51,8 @@ export class GuiControlComponent implements OnInit {
   private drawLine(xPercentStart: number, xPercentEnd: number, yPercentStart: number, yPercentEnd: number) {
       if (this.renderingContext && this.canvas) {
         const __ret = this.mapPercentCoordinateToPixel(xPercentStart);
-        this.renderingContext.strokeStyle = '#FFFFFF30';
+        this.renderingContext.strokeStyle = gridColor;
         this.renderingContext.lineCap = 'round';
-
         this.renderingContext.lineJoin = "round";
 
         this.renderingContext.moveTo(this.mapPercentCoordinateToPixel(xPercentStart), this.mapPercentCoordinateToPixel(yPercentStart));

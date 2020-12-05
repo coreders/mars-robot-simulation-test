@@ -31,18 +31,22 @@ export class RobotService {
   executeCommand(command: RobotCommand) {
     let commandStr = command.toString();
     this.commandsHistory.push(commandStr)
-    this.log.push("["+new Date() + "] >> "+commandStr)
+    this.addLog(">> " + commandStr);
 
     let output = this.simulator.executeCommand(commandStr)
     if(output && output.length > 0) {
       this.outputs.push(output)
-      this.log.push("["+new Date() +"] << "+output)
+      this.addLog("<< " + output);
 
       this.robotPositionObservable.next(this.parsePosition(output))
     }
     if(command.type == "PLACE") {
       this.isPlaced = true
     }
+  }
+
+  private addLog(log: string) {
+    this.log.push("[" + new Date().toISOString() + "] " + log)
   }
 
   getCommandTypes() {
@@ -75,6 +79,10 @@ export class RobotService {
       robotPosition.direction = parsed_report[3]
     }
     return robotPosition;
+  }
+
+  getLogs() {
+    return this.log
   }
 }
 
