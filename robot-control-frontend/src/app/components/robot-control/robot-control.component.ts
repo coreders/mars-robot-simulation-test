@@ -22,7 +22,7 @@ export class RobotControlComponent {
     this.commandForm = this.robot.initNewCommand()
   }
 
-  private executeCommandByName(type: string ) {
+  executeCommandByName(type: string ) {
     let reportCommand = new RobotCommand();
     reportCommand.type = type
     this.robot.executeCommand(reportCommand)
