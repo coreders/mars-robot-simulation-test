@@ -17,11 +17,18 @@ export class RobotControlComponent {
   executeCommand() {
     this.robot.executeCommand(this.commandForm)
     if(this.automaticReport && this.commandForm.type != "REPORT") {
-      let reportCommand = new RobotCommand();
-      reportCommand.type = "REPORT"
-      this.robot.executeCommand(reportCommand)
+      this.executeCommandByName("REPORT");
     }
     this.commandForm = this.robot.initNewCommand()
+  }
+
+  private executeCommandByName(type: string ) {
+    let reportCommand = new RobotCommand();
+    reportCommand.type = type
+    this.robot.executeCommand(reportCommand)
+    if(this.automaticReport && type != "REPORT") {
+      this.executeCommandByName("REPORT");
+    }
   }
 
   changeType(event: Event) {
@@ -39,5 +46,6 @@ export class RobotControlComponent {
   toggleAutomaticReports() {
     this.automaticReport = !this.automaticReport
   }
+
 }
 
