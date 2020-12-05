@@ -10,7 +10,7 @@ import {RobotCommand} from "../../services/robot.service";
 export class ManualControlComponent {
   public commandForm: RobotCommand = new RobotCommand();
 
-  constructor(private robot: RobotService) { }
+  constructor(public robot: RobotService) { }
 
   executeCommand() {
     this.robot.executeCommand(this.commandForm)
@@ -18,11 +18,15 @@ export class ManualControlComponent {
   }
 
   changeType(event: Event) {
-    this.commandForm.type = event.target.value
+    if(event.target) {
+      this.commandForm.type = (<HTMLInputElement>event.target).value
+    }
   }
 
   changeDirection(event: Event) {
-    this.commandForm.direction= event.target.value
+    if(event.target) {
+      this.commandForm.direction = (<HTMLInputElement>event.target).value
+    }
   }
 }
 
