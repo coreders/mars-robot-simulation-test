@@ -1,16 +1,9 @@
-<ul ngbNav #nav="ngbNav" [(activeId)]="active" class="nav-tabs">
-  <li [ngbNavItem]="'gui'">
-    <a ngbNavLink>Graphical robot control interface</a>
-    <ng-template ngbNavContent>
-      <gui-control></gui-control>
-    </ng-template>
-  </li>
-  <li [ngbNavItem]="'manual'">
-    <a ngbNavLink>Manual robot control</a>
-    <ng-template ngbNavContent>
-      <manual-control></manual-control>
-    </ng-template>
-  </li>
-</ul>
+<div class="row">
+  <div class="col-6">
+    <gui-control></gui-control>
+  </div>
+  <div class="col-6">
+    <manual-control></manual-control>
+  </div>
+</div>
 
-<div [ngbNavOutlet]="nav" class="mt-2"></div>

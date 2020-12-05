@@ -1,1 +1,74 @@
-TODO manual control panels
+<div class="card m-2">
+  <div class="card-header">
+    Robot commands
+  </div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">
+      <div class="scrollable">
+        <p *ngFor="let command of robot.getCommandsHistory().reverse()">
+          {{ command }}
+        </p>
+      </div>
+    </li>
+    <li class="list-group-item">
+        <div class="row">
+          <div class="col-6">
+            <select class="browser-default custom-select"
+                    [disabled]="!robot.isPlaced"
+                    [ngModel]="commandForm.type"
+                    (change)="changeType($event)">
+              <option *ngFor="let type of robot.getCommandTypes()" value="{{type}}">{{type}}</option>
+            </select>
+
+          </div>
+          <div class="col-12" *ngIf="commandForm.type == 'PLACE'">
+            <div class="p-1">
+              Where will the spaceship drop the robot ?
+            </div>
+            <div class="p-1 form-group row">
+              <label class="col-3" for="x">X  </label>
+              <input class="form-control col-9" id="x" type="number" min="0" max="{{robot.getMaxGridPosition()}}" [ngModel]="commandForm.xPosition"/>
+            </div>
+            <div class="p-1 form-group row">
+              <label class="col-3" for="y">Y  </label>
+              <input class="form-control col-9" id="y" type="number" min="0" max="{{robot.getMaxGridPosition()}}" [ngModel]="commandForm.yPosition"/>
+            </div>
+            <div class="p-1 form-group row">
+              <label class="col-3" for="direction">Direction  </label>
+              <div class="col-9">
+                <select id="direction" class="browser-default custom-select" [ngModel]="commandForm.direction" (change)="changeDirection($event)">
+                  <option *ngFor="let dir of robot.getDirections()" value="{{dir}}">{{dir}}</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="col-6">
+            <div>
+              <button type="button" (click)="executeCommand()" class="btn btn-primary">Execute</button>
+            </div>
+          </div>
+        </div>
+
+
+
+
+
+
+    </li>
+  </ul>
+</div>
+
+<div class="card m-2">
+  <div class="card-header">
+    Robot outputs
+  </div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">
+      <div class="scrollable">
+        <p *ngFor="let out of robot.getOutputs().reverse()">
+          {{ out }}
+        </p>
+      </div>
+    </li>
+  </ul>
+</div>

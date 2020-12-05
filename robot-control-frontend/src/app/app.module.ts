@@ -5,6 +5,7 @@ import { AppComponent } from './app.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import {ManualControlComponent} from "./components/manual-control/manual-control.component";
 import {GuiControlComponent} from "./components/gui-control/gui-control.component";
+import { FormsModule }        from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -13,6 +14,7 @@ import {GuiControlComponent} from "./components/gui-control/gui-control.componen
     GuiControlComponent
   ],
   imports: [
+    FormsModule,
     BrowserModule,
     NgbModule
   ],
