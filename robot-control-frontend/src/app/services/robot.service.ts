@@ -84,6 +84,7 @@ export class RobotService {
   getLogs() {
     return this.log
   }
+
 }
 
 
